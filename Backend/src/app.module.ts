@@ -5,6 +5,8 @@ import { BullModule } from '@nestjs/bull';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { EmailModule } from './workers/email/email.module';
+import { CronModule } from './workers/cron/cron.module';
+import { OrganizationModule } from './organization/organization.module';
 
 @Module({
     imports: [
@@ -41,6 +43,8 @@ import { EmailModule } from './workers/email/email.module';
         PrismaModule,
         AuthModule,
         EmailModule,
+        CronModule,
+        OrganizationModule,
     ],
 })
 export class AppModule { }

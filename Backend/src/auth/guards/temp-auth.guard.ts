@@ -21,12 +21,38 @@ export class TempAuthGuard implements CanActivate {
 
         try {
             const payload = this.tokenService.verifyTempToken(token);
+            const path = request.path;
 
             if (payload.type !== 'temp' || !payload.emailVerified) {
                 throw new UnauthorizedException({
                     success: false,
                     error: 'INVALID_TOKEN',
                     message: 'Invalid token type',
+                });
+            }
+
+            // Step validation
+            if (path.includes('set-password') && payload.currentStep !== 'set-password') {
+                throw new UnauthorizedException({
+                    success: false,
+                    error: 'INVALID_STEP',
+                    message: 'Please verify your email first',
+                });
+            }
+
+            if ((path.includes('complete-individual') || path.includes('complete-organization')) && payload.currentStep !== 'complete-profile') {
+                throw new UnauthorizedException({
+                    success: false,
+                    error: 'INVALID_STEP',
+                    message: 'Please set your password first',
+                });
+            }
+
+            if (path.includes('reset/complete') && payload.currentStep !== 'reset-password') {
+                throw new UnauthorizedException({
+                    success: false,
+                    error: 'INVALID_STEP',
+                    message: 'Please verify your reset code first',
                 });
             }
 

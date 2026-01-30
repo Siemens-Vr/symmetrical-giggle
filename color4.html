@@ -1,0 +1,637 @@
+from pathlib import Path
+
+updated_html = r"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>VRStore Palette System – Store vs Admin vs Dev</title>
+  <style>
+    :root{
+      /* ---------- Shared "Lock" Palette (Brand Core) ---------- */
+      --space-950:#070A12; /* Deep Space Navy */
+      --space-900:#0B1020; /* Space */
+      --slate-850:#0F172A; /* Charcoal Navy */
+      --panel-800:#121B2E; /* Panels */
+      --panel-750:#16213A; /* Elevated panels */
+      --border-700:rgba(255,255,255,.10);
+      --border-650:rgba(255,255,255,.14);
+
+      --text-100:#F6F7FB;  /* Primary text */
+      --text-200:rgba(246,247,251,.82); /* Secondary text */
+      --text-300:rgba(246,247,251,.62); /* Muted text */
+
+      --blue-500:#2F7BFF;  /* Tech Blue */
+      --cyan-400:#26E6D9;  /* VR Cyan */
+      --teal-500:#00B894;  /* Teal */
+      --violet-500:#7C3AED;/* Violet (optional highlight) */
+
+      /* Accent: Muted Coral–Amber hybrid (fun, controlled) */
+      --spark-500:#FF7A5C; /* Spark (Primary accent) */
+      --spark-600:#E9654B; /* Spark pressed */
+      --spark-300:#FFB39F; /* Spark soft */
+
+      /* Status */
+      --success-500:#22C55E;
+      --warning-500:#F59E0B;
+      --danger-500:#EF4444;
+
+      /* Shadows */
+      --shadow-lg: 0 18px 60px rgba(0,0,0,.55);
+      --shadow-md: 0 10px 32px rgba(0,0,0,.45);
+      --shadow-sm: 0 6px 16px rgba(0,0,0,.35);
+
+      /* Radius + spacing */
+      --r-lg:18px;
+      --r-md:14px;
+      --r-sm:10px;
+
+      /* Glow system (tuned per theme below) */
+      --glow-primary: 0 0 0 rgba(0,0,0,0);
+      --glow-accent:  0 0 0 rgba(0,0,0,0);
+      --glow-cyan:    0 0 0 rgba(0,0,0,0);
+    }
+
+    /* ==========================================================
+       THE CHANGE YOU ASKED FOR:
+       Store uses the "Admin undertone" (not too dark),
+       BUT keeps Store energy (cyan + spark glow, stronger hero lighting).
+       ========================================================== */
+
+    /* ---------- Theme Variations (Store / Admin / Dev) ---------- */
+    [data-theme="store"]{
+      /* Admin undertone as the canvas */
+      --bg: #0A0F1D;
+      --surface: #0F172A;
+      --surface-2: #121D33;
+
+      --text: var(--text-100);
+      --muted: rgba(246,247,251,.80);
+      --muter: rgba(246,247,251,.60);
+
+      /* Store energy */
+      --primary: var(--cyan-400);   /* immersive highlight */
+      --secondary: var(--blue-500); /* trust */
+      --accent: var(--spark-500);   /* fun spark */
+
+      /* Ambient (premium) store glow — stronger than Admin, softer than neon */
+      --glow-primary: 0 0 18px rgba(38,230,217,.20), 0 0 52px rgba(38,230,217,.10);
+      --glow-accent:  0 0 16px rgba(255,122,92,.18), 0 0 48px rgba(255,122,92,.09);
+      --glow-cyan:    0 0 22px rgba(38,230,217,.26), 0 0 64px rgba(38,230,217,.11);
+    }
+
+    [data-theme="admin"]{
+      /* Keep Admin slightly calmer (still same undertone) */
+      --bg: #090E1B;
+      --surface: #0E1628;
+      --surface-2: #111C31;
+
+      --text: var(--text-100);
+      --muted: rgba(246,247,251,.78);
+      --muter: rgba(246,247,251,.58);
+
+      --primary: var(--blue-500); /* admin = trust & clarity */
+      --secondary: #8B5CF6;       /* gentle violet for differentiation */
+      --accent: #F59E0B;          /* amber for warnings/attention */
+
+      /* Less glow than Store */
+      --glow-primary: 0 0 12px rgba(47,123,255,.16);
+      --glow-accent:  0 0 10px rgba(245,158,11,.16);
+      --glow-cyan:    0 0 0 rgba(0,0,0,0);
+    }
+
+    [data-theme="dev"]{
+      --bg: #070A12;
+      --surface: #0C1428;
+      --surface-2: #101B34;
+
+      --text: var(--text-100);
+      --muted: rgba(246,247,251,.80);
+      --muter: rgba(246,247,251,.60);
+
+      --primary: #7C3AED;         /* dev portal = creative energy */
+      --secondary: var(--cyan-400);
+      --accent: var(--spark-500); /* still brand spark */
+
+      --glow-primary: 0 0 18px rgba(124,58,237,.22), 0 0 55px rgba(124,58,237,.10);
+      --glow-accent:  0 0 16px rgba(255,122,92,.18), 0 0 50px rgba(255,122,92,.08);
+      --glow-cyan:    0 0 18px rgba(38,230,217,.18);
+    }
+
+    /* ---------- Base layout ---------- */
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Helvetica Neue";
+      /* Slightly stronger ambient lighting now that Store uses admin undertone */
+      background:
+        radial-gradient(900px 700px at 20% 15%, rgba(38,230,217,.10), transparent 60%),
+        radial-gradient(900px 700px at 80% 20%, rgba(255,122,92,.08), transparent 60%),
+        radial-gradient(900px 700px at 50% 100%, rgba(47,123,255,.07), transparent 55%),
+        var(--bg);
+      color: var(--text);
+    }
+
+    .wrap{ max-width:1180px; margin:0 auto; padding:28px 18px 70px; }
+    header{
+      display:flex; gap:16px; align-items:center; justify-content:space-between;
+      margin-bottom:18px;
+    }
+    .title h1{ margin:0; font-size:20px; letter-spacing:.2px; }
+    .title p{ margin:6px 0 0; color: var(--muted); font-size:13px; line-height:1.35; }
+
+    .controls{
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+    }
+    .seg{
+      display:flex;
+      background: rgba(255,255,255,.06);
+      border: 1px solid var(--border-700);
+      border-radius: 999px;
+      padding: 4px;
+      box-shadow: var(--shadow-sm);
+    }
+    .seg button{
+      border:0;
+      background: transparent;
+      color: var(--muted);
+      padding:8px 12px;
+      border-radius:999px;
+      cursor:pointer;
+      font-weight:650;
+      font-size:12px;
+      letter-spacing:.2px;
+    }
+    .seg button.active{
+      background: rgba(255,255,255,.10);
+      color: var(--text);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.10), var(--glow-primary);
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:14px;
+    }
+    @media (max-width: 960px){ .grid{ grid-template-columns: 1fr; } }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border: 1px solid var(--border-700);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow-md);
+      overflow:hidden;
+    }
+    .card .hd{
+      padding:16px 16px 10px;
+      border-bottom: 1px solid var(--border-700);
+      display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+    }
+    .card .hd h2{ margin:0; font-size:14px; }
+    .card .hd span{ color:var(--muter); font-size:12px; }
+    .card .bd{ padding:16px; }
+
+    /* ---------- Palette chips ---------- */
+    .chips{ display:grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap:10px; }
+    @media (max-width: 680px){ .chips{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+    .chip{
+      border-radius: 14px;
+      border: 1px solid var(--border-700);
+      overflow:hidden;
+      background: rgba(255,255,255,.04);
+    }
+    .swatch{ height:48px; }
+    .meta{ padding:10px 10px 11px; }
+    .meta .n{ font-size:12px; font-weight:750; }
+    .meta .h{ font-size:11px; color:var(--muter); margin-top:4px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+    /* ---------- UI preview ---------- */
+    .preview{
+      display:grid;
+      grid-template-columns: 280px 1fr;
+      min-height: 420px;
+    }
+    @media (max-width: 960px){ .preview{ grid-template-columns: 1fr; } }
+
+    .sidebar{
+      background: rgba(0,0,0,.22);
+      border-right: 1px solid var(--border-700);
+      padding:16px;
+      display:flex; flex-direction:column; gap:14px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      padding:10px 12px;
+      border-radius: 14px;
+      border:1px solid var(--border-700);
+      background: rgba(255,255,255,.04);
+    }
+    .logo{
+      width:38px; height:38px; border-radius: 12px;
+      background: radial-gradient(circle at 30% 30%, rgba(38,230,217,.75), rgba(47,123,255,.35) 55%, rgba(124,58,237,.25));
+      box-shadow: var(--glow-cyan);
+    }
+    .brand b{ font-size:13px; letter-spacing:.4px; }
+    .brand small{ display:block; margin-top:3px; color:var(--muter); font-size:11px; }
+
+    .nav a{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:10px 12px;
+      text-decoration:none;
+      color: var(--muted);
+      border-radius: 12px;
+      border: 1px solid transparent;
+    }
+    .nav a:hover{
+      border-color: var(--border-700);
+      background: rgba(255,255,255,.04);
+    }
+    .nav a.active{
+      color: var(--text);
+      border-color: var(--border-650);
+      background: rgba(255,255,255,.06);
+      box-shadow: var(--glow-primary);
+    }
+
+    .main{
+      padding:18px;
+      display:flex; flex-direction:column; gap:14px;
+    }
+    .hero{
+      border-radius: var(--r-lg);
+      padding:16px;
+      border: 1px solid var(--border-700);
+      background:
+        radial-gradient(520px 260px at 18% 18%, rgba(38,230,217,.16), transparent 62%),
+        radial-gradient(420px 240px at 85% 28%, rgba(255,122,92,.12), transparent 62%),
+        radial-gradient(520px 300px at 55% 120%, rgba(47,123,255,.11), transparent 55%),
+        linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      box-shadow: var(--shadow-md);
+      position:relative;
+      overflow:hidden;
+    }
+    .hero h3{ margin:0; font-size:16px; }
+    .hero p{ margin:8px 0 14px; color:var(--muted); font-size:13px; line-height:1.45; max-width: 60ch;}
+    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+
+    .btn{
+      border:0;
+      cursor:pointer;
+      border-radius: 12px;
+      padding:10px 14px;
+      font-weight: 800;
+      font-size: 12px;
+      letter-spacing:.25px;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+      user-select:none;
+    }
+    .btn:active{ transform: translateY(1px); }
+
+    .btn.primary{
+      color:#041016;
+      background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 90%, white 10%), var(--secondary));
+      box-shadow: var(--glow-primary);
+    }
+    .btn.primary:hover{ transform: translateY(-1px); box-shadow: var(--glow-primary), var(--shadow-sm); }
+
+    .btn.accent{
+      color:#160705;
+      background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 60%, black 40%));
+      box-shadow: var(--glow-accent);
+    }
+    .btn.accent:hover{ transform: translateY(-1px); box-shadow: var(--glow-accent), var(--shadow-sm); }
+
+    .btn.ghost{
+      color: var(--text);
+      background: rgba(255,255,255,.06);
+      border: 1px solid var(--border-700);
+    }
+    .btn.ghost:hover{ background: rgba(255,255,255,.08); }
+
+    .pill{
+      padding:6px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing:.2px;
+      border: 1px solid var(--border-700);
+      background: rgba(255,255,255,.04);
+      color: var(--muted);
+    }
+    .pill.hot{ color:#1a0b08; background: color-mix(in srgb, var(--accent) 30%, transparent); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+    .pill.new{ color:#041016; background: color-mix(in srgb, var(--primary) 22%, transparent); border-color: color-mix(in srgb, var(--primary) 35%, transparent); }
+
+    .stats{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap:10px;
+    }
+    @media (max-width: 560px){ .stats{ grid-template-columns: 1fr; } }
+
+    .stat{
+      border-radius: var(--r-md);
+      border:1px solid var(--border-700);
+      background: rgba(255,255,255,.04);
+      padding:12px;
+    }
+    .stat .k{ color:var(--muter); font-size:11px; letter-spacing:.2px; }
+    .stat .v{ margin-top:7px; font-size:18px; font-weight: 900; }
+
+    .list{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap:10px;
+    }
+    @media (max-width: 700px){ .list{ grid-template-columns: 1fr; } }
+
+    .item{
+      border-radius: var(--r-md);
+      border:1px solid var(--border-700);
+      background: rgba(255,255,255,.04);
+      padding:12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .item b{ font-size:12px; }
+    .item small{ display:block; margin-top:4px; color:var(--muter); font-size:11px; }
+    .badge{
+      padding:6px 10px;
+      border-radius: 10px;
+      font-weight: 900;
+      font-size: 11px;
+      color:#041016;
+      background: color-mix(in srgb, var(--primary) 75%, white 25%);
+      box-shadow: var(--glow-primary);
+      white-space:nowrap;
+    }
+    .badge.sale{
+      color:#160705;
+      background: color-mix(in srgb, var(--accent) 75%, white 25%);
+      box-shadow: var(--glow-accent);
+    }
+
+    /* Small footer note */
+    .note{
+      margin-top:14px;
+      color: var(--muter);
+      font-size: 12px;
+      line-height:1.45;
+      border-top:1px solid var(--border-700);
+      padding-top:12px;
+    }
+    code{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; color: var(--text); }
+  </style>
+</head>
+
+<body data-theme="store">
+  <div class="wrap">
+    <header>
+      <div class="title">
+        <h1>VRStore Color System (Store uses Admin undertone)</h1>
+        <p>
+          Store now uses the <b>Admin undertone</b> as the canvas, but keeps <b>Store energy</b> via cyan + spark glows.
+          Switch themes to compare.
+        </p>
+      </div>
+
+      <div class="controls">
+        <div class="seg" role="tablist" aria-label="Theme selector">
+          <button class="active" data-set="store">Store</button>
+          <button data-set="admin">Admin</button>
+          <button data-set="dev">Dev Portal</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- Palette -->
+      <section class="card">
+        <div class="hd">
+          <div>
+            <h2>Locked Palette (Names + Roles)</h2>
+            <span>Same locked tokens; only theme variables change.</span>
+          </div>
+          <span><code>Brand Core</code></span>
+        </div>
+        <div class="bd">
+          <div class="chips" id="chips"></div>
+
+          <div class="note">
+            <b>Usage rules:</b><br/>
+            • Store background uses the admin undertone: <code>#0A0F1D / #0F172A</code><br/>
+            • Store still highlights: <code>--primary (cyan)</code> + <code>--accent (spark)</code><br/>
+            • Admin glow stays minimal; Store glow stays ambient.
+          </div>
+        </div>
+      </section>
+
+      <!-- Glow & motion -->
+      <section class="card">
+        <div class="hd">
+          <div>
+            <h2>VR Glow / Motion Tuning</h2>
+            <span>Store: ambient glow. Admin: minimal glow.</span>
+          </div>
+          <span><code>Effects</code></span>
+        </div>
+        <div class="bd">
+          <div class="stat" style="margin-bottom:10px">
+            <div class="k">Glow quick guide</div>
+            <div class="v" style="font-size:13px; font-weight:750; margin-top:8px; line-height:1.5">
+              • Store buttons/badges: use <code>--glow-primary</code> / <code>--glow-accent</code><br/>
+              • Store hero/brand: use <code>--glow-cyan</code><br/>
+              • Admin: keep glow subtle to avoid fatigue.
+            </div>
+          </div>
+
+          <div class="note">
+            <b>Motion:</b> hover = translateY(-1px) + slight glow increase. tap = translateY(+1px). Keep it subtle.
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Preview -->
+    <section class="card" style="margin-top:14px;">
+      <div class="hd">
+        <div>
+          <h2>UI Preview</h2>
+          <span>Same components, different theme variables.</span>
+        </div>
+        <span><code>Preview</code></span>
+      </div>
+
+      <div class="preview">
+        <aside class="sidebar">
+          <div class="brand">
+            <div class="logo" aria-hidden="true"></div>
+            <div>
+              <b>VR STORE</b>
+              <small>Alive undertone • Ambient glow</small>
+            </div>
+          </div>
+
+          <nav class="nav">
+            <a class="active" href="javascript:void(0)">🏠 Home <span>›</span></a>
+            <a href="javascript:void(0)">⬇️ Download <span>›</span></a>
+            <a href="javascript:void(0)">🎮 Apps & Games <span>›</span></a>
+            <a href="javascript:void(0)">⭐ Featured <span>›</span></a>
+            <a href="javascript:void(0)">🧑‍💻 Developer Portal <span>›</span></a>
+            <a href="javascript:void(0)">🛡️ Admin <span>›</span></a>
+          </nav>
+
+          <div class="note" style="border-top:none; padding-top:0;">
+            <b>Store decision:</b><br/>
+            Same undertone as admin, but “lit” like a VR space.
+          </div>
+        </aside>
+
+        <main class="main">
+          <div class="hero">
+            <div class="row" style="justify-content:space-between; align-items:flex-start">
+              <div>
+                <h3>Featured this week</h3>
+                <p>
+                  Store now uses the admin undertone base, but the hero has stronger ambient lighting.
+                  The store stays premium by keeping the Spark accent limited.
+                </p>
+              </div>
+              <div class="row">
+                <span class="pill new">NEW</span>
+                <span class="pill hot">SALE</span>
+              </div>
+            </div>
+
+            <div class="row">
+              <button class="btn primary">✨ Explore</button>
+              <button class="btn accent">⬇️ Download</button>
+              <button class="btn ghost">♡ Wishlist</button>
+            </div>
+          </div>
+
+          <div class="stats">
+            <div class="stat">
+              <div class="k">Downloads</div>
+              <div class="v">128.4K</div>
+            </div>
+            <div class="stat">
+              <div class="k">Top Rating</div>
+              <div class="v">4.7 ★</div>
+            </div>
+            <div class="stat">
+              <div class="k">New Apps</div>
+              <div class="v">+32</div>
+            </div>
+          </div>
+
+          <div class="list">
+            <div class="item">
+              <div>
+                <b>SmartLine Automotive</b>
+                <small>Training • Digital Twin • VR</small>
+              </div>
+              <span class="badge">Featured</span>
+            </div>
+            <div class="item">
+              <div>
+                <b>Solar Drier Twin</b>
+                <small>Education • Industry 4.0</small>
+              </div>
+              <span class="badge sale">-30%</span>
+            </div>
+            <div class="item">
+              <div>
+                <b>Developer Tools</b>
+                <small>Upload • Payouts • Analytics</small>
+              </div>
+              <span class="badge">Portal</span>
+            </div>
+            <div class="item">
+              <div>
+                <b>Admin Reviews</b>
+                <small>Compliance • Quality • Trust</small>
+              </div>
+              <span class="badge">Review</span>
+            </div>
+          </div>
+
+          <div class="note">
+            <b>Tip:</b> When implementing in your real app, keep admin pages calmer (less glow) and store pages slightly more “lit”.
+          </div>
+        </main>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    const THEME_BUTTONS = [...document.querySelectorAll('.seg button')];
+    const BODY = document.body;
+
+    const TOKENS = [
+      { name:'Space 950', var:'--space-950', role:'Primary app background (deep alt)' },
+      { name:'Space 900', var:'--space-900', role:'Alt background / gradients' },
+      { name:'Charcoal Navy', var:'--slate-850', role:'Anchor surfaces' },
+      { name:'Panel 800', var:'--panel-800', role:'Cards / panels (alt)' },
+      { name:'Panel 750', var:'--panel-750', role:'Elevated panels (alt)' },
+      { name:'Tech Blue', var:'--blue-500', role:'Links, focus, trust' },
+      { name:'VR Cyan', var:'--cyan-400', role:'Immersive highlights, glow' },
+      { name:'Teal', var:'--teal-500', role:'Secondary actions' },
+      { name:'Violet', var:'--violet-500', role:'Dev differentiation' },
+      { name:'Spark Accent', var:'--spark-500', role:'Primary CTA / fun spark (5–10%)' },
+      { name:'Text 100', var:'--text-100', role:'Primary text' },
+      { name:'Text 200', var:'--text-200', role:'Secondary text' },
+      { name:'Text 300', var:'--text-300', role:'Muted text' }
+    ];
+
+    const chipsEl = document.getElementById('chips');
+
+    function cssVarValue(v){
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+    }
+
+    function renderChips(){
+      chipsEl.innerHTML = '';
+      TOKENS.forEach(t=>{
+        const chip = document.createElement('div');
+        chip.className = 'chip';
+
+        const sw = document.createElement('div');
+        sw.className = 'swatch';
+        sw.style.background = cssVarValue(t.var) || 'transparent';
+
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        meta.innerHTML = `<div class="n">${t.name}</div>
+                          <div class="h">${t.var}: ${cssVarValue(t.var)}</div>
+                          <div class="h" style="opacity:.85">${t.role}</div>`;
+        chip.appendChild(sw);
+        chip.appendChild(meta);
+        chipsEl.appendChild(chip);
+      });
+    }
+
+    function setTheme(theme){
+      BODY.setAttribute('data-theme', theme);
+      THEME_BUTTONS.forEach(b=>b.classList.toggle('active', b.dataset.set === theme));
+      renderChips();
+    }
+
+    THEME_BUTTONS.forEach(btn=>{
+      btn.addEventListener('click', ()=> setTheme(btn.dataset.set));
+    });
+
+    renderChips();
+  </script>
+</body>
+</html>
+"""
+
+out_path = Path("/mnt/data/color1_store_uses_admin_undertone.html")
+out_path.write_text(updated_html, encoding="utf-8")
+str(out_path)

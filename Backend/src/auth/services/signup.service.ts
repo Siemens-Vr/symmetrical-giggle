@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
+import { PrismaService } from '../../prisma/prisma.service';
 import { UserRepository } from '../../repositories/user.repository';
 import { OtpRepository } from '../../repositories/otp.repository';
 import { SessionRepository } from '../../repositories/session.repository';
@@ -15,7 +16,7 @@ import { OrganizationMemberRepository } from '../../repositories/organization-me
 import { OrganizationVerificationRepository } from '../../repositories/organization-verification.repository';
 import { OtpService } from './otp.service';
 import { TokenService } from './token.service';
-import { hashPassword } from '../../common/utils/password.util';
+import { hashPassword, validatePasswordStrength } from '../../common/utils/password.util';
 import { isAgeValid } from '../../common/utils/age.util';
 import { validateSlugFormat } from '../../common/utils/slug.util';
 import { OtpPurpose, OrgRole } from '@prisma/client';
@@ -23,6 +24,7 @@ import { OtpPurpose, OrgRole } from '@prisma/client';
 @Injectable()
 export class SignupService {
     constructor(
+        private prisma: PrismaService,
         private userRepository: UserRepository,
         private otpRepository: OtpRepository,
         private sessionRepository: SessionRepository,
@@ -40,7 +42,9 @@ export class SignupService {
     async initiateSignup(email: string, ip?: string, userAgent?: string) {
         // Check if user already exists
         const existingUser = await this.userRepository.findByEmail(email);
-        if (existingUser && existingUser.emailVerified) {
+
+        // If user exists, is verified, AND has a password, it's a conflict
+        if (existingUser && existingUser.emailVerified && existingUser.passwordHash) {
             throw new ConflictException({
                 success: false,
                 error: 'EMAIL_ALREADY_EXISTS',
@@ -55,6 +59,25 @@ export class SignupService {
             user = await this.userRepository.create({
                 email,
                 passwordHash: '', // Will be set later
+            });
+        }
+
+        // Email-based rate limiting: Max 5 emails per hour per address
+        const oneHourAgo = new Date();
+        oneHourAgo.setHours(oneHourAgo.getHours() - 1);
+
+        const recentOtpsCount = await this.prisma.emailOtp.count({
+            where: {
+                userId: user.id,
+                createdAt: { gte: oneHourAgo },
+            },
+        });
+
+        if (recentOtpsCount >= 5) {
+            throw new BadRequestException({
+                success: false,
+                error: 'TOO_MANY_REQUESTS',
+                message: 'Maximum verification attempts reached for this email. Please try again in an hour.',
             });
         }
 
@@ -132,7 +155,7 @@ export class SignupService {
         await this.userRepository.setEmailVerified(user.id);
 
         // Generate temp token for next steps
-        const tempToken = this.tokenService.generateTempToken(user.id, user.email);
+        const tempToken = this.tokenService.generateTempToken(user.id, user.email, 'set-password');
 
         return {
             success: true,
@@ -180,12 +203,26 @@ export class SignupService {
      * Step 4: Set password
      */
     async setPassword(userId: string, password: string) {
+        // Validate password strength
+        if (!validatePasswordStrength(password)) {
+            throw new BadRequestException({
+                success: false,
+                error: 'WEAK_PASSWORD',
+                message: 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character.',
+            });
+        }
+
         const passwordHash = await hashPassword(password);
         await this.userRepository.setPassword(userId, passwordHash);
+
+        // Generate token for next step
+        const user = await this.userRepository.findById(userId);
+        const tempToken = this.tokenService.generateTempToken(userId, user.email, 'complete-profile');
 
         return {
             success: true,
             message: 'Password set successfully',
+            tempToken,
         };
     }
 
@@ -199,6 +236,8 @@ export class SignupService {
             lastName: string;
             dateOfBirth: string;
             country: string;
+            termsAccepted?: boolean;
+            tosVersion?: string;
         },
         ip?: string,
         userAgent?: string,
@@ -219,6 +258,8 @@ export class SignupService {
             lastName: data.lastName,
             dateOfBirth: dob,
             country: data.country,
+            termsAccepted: data.termsAccepted,
+            tosVersion: '1.0', // Hardcoded for now, or pass from FE
         });
 
         // Create session and tokens
@@ -255,6 +296,7 @@ export class SignupService {
             type: any;
             country: string;
             websiteUrl?: string;
+            termsAccepted: boolean;
         },
         ip?: string,
         userAgent?: string,
@@ -280,23 +322,28 @@ export class SignupService {
             });
         }
 
-        // Create organization
-        const organization = await this.organizationRepository.create({
-            slug: data.slug,
-            name: data.organizationName,
-            type: data.type,
-            country: data.country,
-            websiteUrl: data.websiteUrl,
+        // Transaction: Create Org + Member + Update User
+        const { organization, user } = await this.prisma.$transaction(async (tx) => {
+            // Create organization
+            const org = await this.organizationRepository.create({
+                slug: data.slug,
+                name: data.organizationName,
+                type: data.type,
+                country: data.country,
+                websiteUrl: data.websiteUrl,
+            }, tx);
+
+            // Add user as owner
+            await this.organizationMemberRepository.create(org.id, userId, OrgRole.OWNER, tx);
+
+            // Update user terms
+            const u = await this.userRepository.updateProfile(userId, {
+                termsAccepted: data.termsAccepted,
+                tosVersion: '1.0',
+            }, tx);
+
+            return { organization: org, user: u };
         });
-
-        // Add user as owner
-        await this.organizationMemberRepository.create(organization.id, userId, OrgRole.OWNER);
-
-        // Create verification record
-        await this.organizationVerificationRepository.create(organization.id);
-
-        // Get user
-        const user = await this.userRepository.findById(userId);
 
         // Create session and tokens
         const { accessToken, refreshToken, expiresIn } = await this.createSession(

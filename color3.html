@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>VRStore Palette v3 – Unified Brighter Base</title>
+  <style>
+    :root{
+      /* ---------- NEW UNIFIED BASE (Admin-lifted) ---------- */
+      --space-950:#0A0F1D; /* Primary background (lifted from #070A12) */
+      --space-900:#0D1424; /* Alt background / gradients */
+      --slate-850:#111827; /* Charcoal anchor */
+      --panel-800:#0F172A; /* Cards / panels / modals */
+      --panel-750:#152032; /* Elevated panels */
+      --panel-700:#1A2744; /* Hover state panels */
+      --panel-650:#1F2D52; /* Active/selected panels */
+      
+      --border-700:rgba(255,255,255,.10);
+      --border-650:rgba(255,255,255,.14);
+      --border-600:rgba(255,255,255,.18);
+      --border-500:rgba(255,255,255,.22); /* More visible borders */
+
+      /* Text hierarchy */
+      --text-100:#F6F7FB;
+      --text-200:rgba(246,247,251,.82);
+      --text-300:rgba(246,247,251,.62);
+      --text-400:rgba(246,247,251,.45); /* Extra muted */
+
+      /* Primary Colors */
+      --blue-500:#2F7BFF;
+      --blue-400:#5B9AFF; /* Lighter blue for hovers */
+      --cyan-400:#26E6D9;
+      --cyan-300:#5EEDE4; /* Lighter cyan */
+      --mint-500:#10B981;
+      --mint-400:#34D399;
+      --violet-500:#7C3AED;
+      --violet-400:#A78BFA;
+
+      /* Accent: Spark (the FUN factor) */
+      --spark-500:#FF7A5C;
+      --spark-600:#E9654B;
+      --spark-400:#FF9580;
+      --spark-300:#FFB39F;
+      --spark-200:#FFDDD4;
+
+      /* Status */
+      --success-500:#22C55E;
+      --warning-500:#F59E0B;
+      --danger-500:#EF4444;
+
+      /* Shadows (slightly softer for brighter base) */
+      --shadow-lg: 0 18px 60px rgba(0,0,0,.50);
+      --shadow-md: 0 10px 32px rgba(0,0,0,.40);
+      --shadow-sm: 0 6px 16px rgba(0,0,0,.30);
+
+      /* Radius */
+      --r-lg:18px;
+      --r-md:14px;
+      --r-sm:10px;
+
+      /* Glow system (base - overridden per theme) */
+      --glow-primary: 0 0 0 rgba(0,0,0,0);
+      --glow-accent:  0 0 0 rgba(0,0,0,0);
+      --glow-cyan:    0 0 0 rgba(0,0,0,0);
+      --glow-warm-ambient: 0 0 0 rgba(0,0,0,0);
+    }
+
+    /* ---------- STORE THEME ---------- */
+    [data-theme="store"]{
+      --bg: var(--space-950);
+      --surface: var(--panel-800);
+      --surface-2: var(--panel-750);
+      --surface-3: var(--panel-700);
+      --text: var(--text-100);
+      --muted: var(--text-200);
+      --muter: var(--text-300);
+
+      --primary: var(--cyan-400);
+      --primary-hover: var(--cyan-300);
+      --secondary: var(--blue-500);
+      --accent: var(--spark-500);
+      --accent-hover: var(--spark-400);
+
+      /* BOOSTED glows (+15% for brighter base) */
+      --glow-primary: 0 0 24px rgba(38,230,217,.28), 0 0 65px rgba(38,230,217,.14);
+      --glow-accent:  0 0 22px rgba(255,122,92,.30), 0 0 60px rgba(255,122,92,.15);
+      --glow-cyan:    0 0 30px rgba(38,230,217,.35), 0 0 80px rgba(38,230,217,.16);
+      --glow-warm-ambient: 0 0 100px rgba(255,122,92,.08);
+    }
+
+    /* ---------- ADMIN THEME ---------- */
+    [data-theme="admin"]{
+      --bg: var(--space-950);
+      --surface: var(--panel-800);
+      --surface-2: var(--panel-750);
+      --surface-3: var(--panel-700);
+      --text: var(--text-100);
+      --muted: var(--text-200);
+      --muter: var(--text-300);
+
+      --primary: var(--blue-500);
+      --primary-hover: var(--blue-400);
+      --secondary: var(--mint-500);
+      --accent: var(--warning-500);
+      --accent-hover: #FBBF24;
+
+      /* Minimal glows for clarity */
+      --glow-primary: 0 0 16px rgba(47,123,255,.22);
+      --glow-accent:  0 0 14px rgba(245,158,11,.22);
+      --glow-cyan:    0 0 0 rgba(0,0,0,0);
+      --glow-warm-ambient: 0 0 0 rgba(0,0,0,0);
+    }
+
+    /* ---------- DEV THEME ---------- */
+    [data-theme="dev"]{
+      --bg: var(--space-950);
+      --surface: var(--panel-800);
+      --surface-2: var(--panel-750);
+      --surface-3: var(--panel-700);
+      --text: var(--text-100);
+      --muted: var(--text-200);
+      --muter: var(--text-300);
+
+      --primary: var(--cyan-400);
+      --primary-hover: var(--cyan-300);
+      --secondary: var(--violet-500);
+      --accent: var(--spark-500);
+      --accent-hover: var(--spark-400);
+
+      /* Creative energy glows */
+      --glow-primary: 0 0 24px rgba(38,230,217,.26), 0 0 60px rgba(38,230,217,.12);
+      --glow-accent:  0 0 20px rgba(124,58,237,.28), 0 0 55px rgba(124,58,237,.14);
+      --glow-cyan:    0 0 22px rgba(38,230,217,.24);
+      --glow-warm-ambient: 0 0 0 rgba(0,0,0,0);
+    }
+
+    /* ---------- Base layout ---------- */
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Helvetica Neue";
+      background: radial-gradient(ellipse 900px 700px at 20% 10%, rgba(38,230,217,.07), transparent 60%),
+                  radial-gradient(ellipse 800px 600px at 85% 20%, rgba(255,122,92,.06), transparent 55%),
+                  radial-gradient(ellipse 600px 400px at 50% 90%, rgba(47,123,255,.04), transparent 50%),
+                  var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .wrap{ max-width:1200px; margin:0 auto; padding:28px 20px 70px; }
+    
+    header{
+      display:flex; gap:16px; align-items:center; justify-content:space-between;
+      margin-bottom:20px;
+      flex-wrap: wrap;
+    }
+    .title h1{ margin:0; font-size:22px; letter-spacing:.3px; font-weight: 700; }
+    .title p{ margin:8px 0 0; color: var(--muted); font-size:14px; line-height:1.4; }
+
+    .controls{
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+    }
+    .seg{
+      display:flex;
+      background: rgba(255,255,255,.06);
+      border: 1px solid var(--border-700);
+      border-radius: 999px;
+      padding: 4px;
+      box-shadow: var(--shadow-sm);
+    }
+    .seg button{
+      border:0;
+      background: transparent;
+      color: var(--muted);
+      padding:9px 16px;
+      border-radius:999px;
+      cursor:pointer;
+      font-weight:650;
+      font-size:12px;
+      letter-spacing:.3px;
+      transition: all 0.15s ease;
+    }
+    .seg button:hover{
+      color: var(--text);
+      background: rgba(255,255,255,.05);
+    }
+    .seg button.active{
+      background: rgba(255,255,255,.12);
+      color: var(--text);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.12), var(--glow-primary);
+    }
+
+    /* ---------- Version badge ---------- */
+    .version-badge{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      background: linear-gradient(135deg, rgba(38,230,217,.12) 0%, rgba(255,122,92,.08) 100%);
+      border: 1px solid rgba(38,230,217,.2);
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .version-badge .dot{
+      width: 8px;
+      height: 8px;
+      background: var(--cyan-400);
+      border-radius: 50%;
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+    @keyframes pulse-dot{
+      0%, 100%{ opacity: 1; transform: scale(1); }
+      50%{ opacity: 0.6; transform: scale(1.2); }
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:16px;
+    }
+    @media (max-width: 960px){ .grid{ grid-template-columns: 1fr; } }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+      border: 1px solid var(--border-700);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow-md);
+      overflow:hidden;
+    }
+    .card .hd{
+      padding:18px 18px 12px;
+      border-bottom: 1px solid var(--border-700);
+      display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+    }
+    .card .hd h2{ margin:0; font-size:15px; font-weight: 650; }
+    .card .hd span{ color:var(--muter); font-size:12px; }
+    .card .bd{ padding:18px; }
+
+    /* ---------- Comparison banner ---------- */
+    .comparison-banner{
+      background: linear-gradient(135deg, rgba(34,197,94,.08) 0%, rgba(38,230,217,.06) 100%);
+      border: 1px solid rgba(34,197,94,.2);
+      border-radius: var(--r-lg);
+      padding: 20px;
+      margin-bottom: 20px;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 16px;
+      align-items: center;
+    }
+    .comparison-banner .icon{
+      width: 48px;
+      height: 48px;
+      background: rgba(34,197,94,.15);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+    .comparison-banner h3{
+      margin: 0 0 6px;
+      font-size: 15px;
+      color: var(--success-500);
+    }
+    .comparison-banner p{
+      margin: 0;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .comparison-banner code{
+      background: rgba(255,255,255,.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+
+    /* ---------- Base colors showcase ---------- */
+    .base-showcase{
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    @media (max-width: 680px){ .base-showcase{ grid-template-columns: repeat(2, 1fr); } }
+    
+    .base-color{
+      border-radius: var(--r-md);
+      overflow: hidden;
+      border: 1px solid var(--border-700);
+    }
+    .base-color .swatch{
+      height: 60px;
+      display: flex;
+      align-items: flex-end;
+      padding: 8px;
+    }
+    .base-color .swatch span{
+      font-size: 10px;
+      font-weight: 700;
+      background: rgba(0,0,0,.4);
+      padding: 3px 6px;
+      border-radius: 4px;
+    }
+    .base-color .info{
+      padding: 10px;
+      background: rgba(0,0,0,.2);
+      font-size: 11px;
+    }
+    .base-color .info .name{ font-weight: 700; margin-bottom: 3px; }
+    .base-color .info .hex{ color: var(--muter); font-family: monospace; }
+
+    /* ---------- Palette chips ---------- */
+    .chips{ display:grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap:10px; }
+    @media (max-width: 680px){ .chips{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+    .chip{
+      border-radius: 14px;
+      border: 1px solid var(--border-700);
+      overflow:hidden;
+      background: rgba(255,255,255,.04);
+      transition: all 0.15s ease;
+    }
+    .chip:hover{
+      border-color: var(--border-600);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-sm);
+    }
+    .swatch{ height:50px; }
+    .meta{ padding:10px 10px 11px; }
+    .meta .n{ font-size:12px; font-weight:700; }
+    .meta .h{ font-size:10px; color:var(--muter); margin-top:4px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+    /* ---------- UI preview ---------- */
+    .preview{
+      display:grid;
+      grid-template-columns: 260px 1fr;
+      min-height: 520px;
+    }
+    @media (max-width: 960px){ .preview{ grid-template-columns: 1fr; } }
+
+    .sidebar{
+      background: rgba(0,0,0,.2);
+      border-right: 1px solid var(--border-700);
+      padding:18px;
+      display:flex; flex-direction:column; gap:16px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:12px;
+      padding:12px 14px;
+      border-radius: 14px;
+      border:1px solid var(--border-700);
+      background: linear-gradient(135deg, rgba(255,255,255,.06) 0%, rgba(255,255,255,.02) 100%);
+    }
+    .logo{
+      width:40px; height:40px; border-radius: 12px;
+      background: linear-gradient(135deg, rgba(38,230,217,.8) 0%, rgba(47,123,255,.5) 50%, rgba(255,122,92,.4) 100%);
+      box-shadow: var(--glow-cyan);
+    }
+    .brand b{ font-size:14px; letter-spacing:.5px; }
+    .brand small{ display:block; margin-top:4px; color:var(--muter); font-size:11px; }
+
+    .nav{ display: flex; flex-direction: column; gap: 4px; }
+    .nav a{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:11px 14px;
+      color: var(--muted);
+      text-decoration:none;
+      border-radius: var(--r-sm);
+      font-size:13px;
+      font-weight:550;
+      transition: all 0.15s ease;
+      border: 1px solid transparent;
+    }
+    .nav a:hover{
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      transform: translateX(3px);
+    }
+    .nav a.active{
+      background: linear-gradient(135deg, rgba(38,230,217,.14) 0%, rgba(255,122,92,.07) 100%);
+      color: var(--text);
+      border-color: rgba(38,230,217,.22);
+      box-shadow: var(--glow-primary);
+    }
+    .nav a span{ opacity:.4; font-size: 11px; }
+
+    .main{
+      padding:20px;
+      display:flex; flex-direction:column; gap:18px;
+    }
+
+    .hero{
+      background: linear-gradient(145deg, rgba(38,230,217,.12) 0%, rgba(255,122,92,.09) 50%, rgba(47,123,255,.06) 100%);
+      border: 1px solid rgba(38,230,217,.2);
+      border-radius: var(--r-lg);
+      padding:24px;
+      box-shadow: var(--glow-warm-ambient), var(--glow-cyan);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before{
+      content: '';
+      position: absolute;
+      top: -40%;
+      right: -15%;
+      width: 280px;
+      height: 280px;
+      background: radial-gradient(circle, rgba(255,122,92,.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero::after{
+      content: '';
+      position: absolute;
+      bottom: -30%;
+      left: -10%;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(38,230,217,.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero h3{ margin:0 0 10px; font-size:18px; position: relative; font-weight: 700; }
+    .hero p{ margin:0; color: var(--muted); font-size:14px; line-height:1.55; max-width: 500px; position: relative; }
+
+    .row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; position: relative; }
+
+    .btn{
+      border:0;
+      padding:11px 20px;
+      border-radius: 999px;
+      font-weight:700;
+      font-size:13px;
+      cursor:pointer;
+      transition: all 0.18s ease;
+      letter-spacing: 0.3px;
+    }
+    .btn.primary{
+      background: linear-gradient(135deg, var(--cyan-400) 0%, #20C5BA 100%);
+      color: #0A0F1D;
+      box-shadow: var(--glow-primary), 0 2px 10px rgba(38,230,217,.35);
+    }
+    .btn.primary:hover{
+      transform: translateY(-2px);
+      box-shadow: var(--glow-cyan), 0 6px 20px rgba(38,230,217,.45);
+    }
+    
+    .btn.accent{
+      background: linear-gradient(135deg, var(--spark-500) 0%, var(--spark-600) 100%);
+      color: #fff;
+      box-shadow: var(--glow-accent), 0 2px 10px rgba(255,122,92,.35);
+    }
+    .btn.accent:hover{
+      background: linear-gradient(135deg, var(--spark-400) 0%, var(--spark-500) 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 0 28px rgba(255,122,92,.4), 0 6px 20px rgba(255,122,92,.45);
+    }
+    
+    .btn.ghost{
+      background: rgba(255,255,255,.07);
+      color: var(--text);
+      border: 1px solid var(--border-650);
+    }
+    .btn.ghost:hover{
+      background: rgba(255,255,255,.12);
+      border-color: var(--border-500);
+      transform: translateY(-1px);
+    }
+
+    .pill{
+      display:inline-block;
+      padding:6px 12px;
+      border-radius:999px;
+      font-size:10px;
+      font-weight:800;
+      letter-spacing:.6px;
+    }
+    .pill.new{
+      background: linear-gradient(135deg, rgba(38,230,217,.22) 0%, rgba(38,230,217,.12) 100%);
+      color: var(--cyan-300);
+      border: 1px solid rgba(38,230,217,.3);
+    }
+    .pill.hot{
+      background: linear-gradient(135deg, rgba(255,122,92,.28) 0%, rgba(255,122,92,.16) 100%);
+      color: var(--spark-300);
+      border: 1px solid rgba(255,122,92,.35);
+      animation: pulse-warm 2s ease-in-out infinite;
+    }
+    @keyframes pulse-warm{
+      0%, 100%{ box-shadow: 0 0 0 rgba(255,122,92,0); }
+      50%{ box-shadow: 0 0 16px rgba(255,122,92,.25); }
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:12px;
+    }
+    .stat{
+      background: rgba(255,255,255,.05);
+      border: 1px solid var(--border-700);
+      border-radius: var(--r-md);
+      padding:16px;
+      transition: all 0.15s ease;
+    }
+    .stat:hover{
+      background: rgba(255,255,255,.08);
+      border-color: var(--border-650);
+      transform: translateY(-1px);
+    }
+    .stat .k{ font-size:11px; color: var(--muter); margin-bottom:8px; text-transform: uppercase; letter-spacing: 0.6px; font-weight: 600; }
+    .stat .v{ font-size:20px; font-weight:800; }
+
+    .list{
+      display:flex; flex-direction:column; gap:10px;
+    }
+    .item{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:14px 16px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--border-700);
+      border-radius: var(--r-md);
+      transition: all 0.15s ease;
+    }
+    .item:hover{
+      background: linear-gradient(135deg, rgba(255,255,255,.07) 0%, rgba(255,122,92,.04) 100%);
+      border-color: rgba(255,122,92,.18);
+      transform: translateX(4px);
+    }
+    .item b{ font-size:14px; display:block; margin-bottom:4px; }
+    .item small{ font-size:12px; color: var(--muter); }
+
+    .badge{
+      font-size:10px;
+      font-weight:750;
+      padding:6px 12px;
+      border-radius:999px;
+      background: rgba(38,230,217,.14);
+      color: var(--cyan-300);
+      border: 1px solid rgba(38,230,217,.22);
+    }
+    .badge.sale{
+      background: linear-gradient(135deg, rgba(255,122,92,.22) 0%, rgba(255,122,92,.12) 100%);
+      color: var(--spark-300);
+      border-color: rgba(255,122,92,.28);
+    }
+    .badge.portal{
+      background: rgba(124,58,237,.18);
+      color: var(--violet-400);
+      border-color: rgba(124,58,237,.28);
+    }
+    .badge.review{
+      background: rgba(47,123,255,.14);
+      color: var(--blue-400);
+      border-color: rgba(47,123,255,.22);
+    }
+
+    .note{
+      font-size:12px;
+      color: var(--muter);
+      line-height:1.65;
+      padding:16px;
+      border-top: 1px solid var(--border-700);
+      background: rgba(0,0,0,.12);
+      border-radius: 0 0 var(--r-md) var(--r-md);
+    }
+    .note b{ color: var(--text); }
+
+    code{
+      background: rgba(255,255,255,.1);
+      padding:2px 7px;
+      border-radius:5px;
+      font-size:11px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    /* ---------- Token Reference ---------- */
+    .token-grid{
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    @media (max-width: 680px){ .token-grid{ grid-template-columns: 1fr; } }
+    
+    .token-group{
+      background: rgba(0,0,0,.15);
+      border-radius: var(--r-md);
+      padding: 14px;
+    }
+    .token-group h4{
+      margin: 0 0 10px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--muter);
+    }
+    .token-row{
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 0;
+      font-size: 12px;
+    }
+    .token-row .color-dot{
+      width: 18px;
+      height: 18px;
+      border-radius: 6px;
+      border: 1px solid var(--border-650);
+      flex-shrink: 0;
+    }
+    .token-row .token-name{
+      font-family: monospace;
+      color: var(--muted);
+    }
+    .token-row .token-value{
+      margin-left: auto;
+      font-family: monospace;
+      color: var(--muter);
+      font-size: 10px;
+    }
+  </style>
+</head>
+<body data-theme="store">
+  <div class="wrap">
+
+    <header>
+      <div class="title">
+        <h1>🎮 VRStore Palette v3</h1>
+        <p>Unified brighter base • Same accents • More approachable</p>
+      </div>
+      <div class="controls">
+        <div class="version-badge">
+          <span class="dot"></span>
+          Final Version
+        </div>
+        <div class="seg">
+          <button data-set="store" class="active">Store</button>
+          <button data-set="admin">Admin</button>
+          <button data-set="dev">Dev</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Comparison Banner -->
+    <div class="comparison-banner">
+      <div class="icon">✓</div>
+      <div>
+        <h3>Unified Base Applied</h3>
+        <p>
+          All themes now share the brighter <code>#0A0F1D</code> background (was <code>#070A12</code> for Store). 
+          Glows boosted +15% to maintain punch. Content is more readable, store feels more inviting.
+        </p>
+      </div>
+    </div>
+
+    <!-- Base Colors -->
+    <div class="base-showcase">
+      <div class="base-color">
+        <div class="swatch" style="background: #0A0F1D;"><span>BG</span></div>
+        <div class="info">
+          <div class="name">Space 950</div>
+          <div class="hex">#0A0F1D</div>
+        </div>
+      </div>
+      <div class="base-color">
+        <div class="swatch" style="background: #0F172A;"><span>Surface</span></div>
+        <div class="info">
+          <div class="name">Panel 800</div>
+          <div class="hex">#0F172A</div>
+        </div>
+      </div>
+      <div class="base-color">
+        <div class="swatch" style="background: #152032;"><span>Elevated</span></div>
+        <div class="info">
+          <div class="name">Panel 750</div>
+          <div class="hex">#152032</div>
+        </div>
+      </div>
+      <div class="base-color">
+        <div class="swatch" style="background: #1A2744;"><span>Hover</span></div>
+        <div class="info">
+          <div class="name">Panel 700</div>
+          <div class="hex">#1A2744</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- Color Tokens -->
+      <section class="card">
+        <div class="hd">
+          <div>
+            <h2>Color Tokens</h2>
+            <span>Switch themes to see accent changes</span>
+          </div>
+          <span><code>:root</code></span>
+        </div>
+        <div class="bd">
+          <div class="chips" id="chips"></div>
+        </div>
+      </section>
+
+      <!-- Token Reference -->
+      <section class="card">
+        <div class="hd">
+          <div>
+            <h2>Quick Reference</h2>
+            <span>Copy-paste ready</span>
+          </div>
+          <span><code>CSS</code></span>
+        </div>
+        <div class="bd">
+          <div class="token-grid">
+            <div class="token-group">
+              <h4>Backgrounds</h4>
+              <div class="token-row">
+                <div class="color-dot" style="background: #0A0F1D;"></div>
+                <span class="token-name">--space-950</span>
+                <span class="token-value">#0A0F1D</span>
+              </div>
+              <div class="token-row">
+                <div class="color-dot" style="background: #0F172A;"></div>
+                <span class="token-name">--panel-800</span>
+                <span class="token-value">#0F172A</span>
+              </div>
+              <div class="token-row">
+                <div class="color-dot" style="background: #152032;"></div>
+                <span class="token-name">--panel-750</span>
+                <span class="token-value">#152032</span>
+              </div>
+              <div class="token-row">
+                <div class="color-dot" style="background: #1A2744;"></div>
+                <span class="token-name">--panel-700</span>
+                <span class="token-value">#1A2744</span>
+              </div>
+            </div>
+            <div class="token-group">
+              <h4>Primary Colors</h4>
+              <div class="token-row">
+                <div class="color-dot" style="background: #26E6D9;"></div>
+                <span class="token-name">--cyan-400</span>
+                <span class="token-value">#26E6D9</span>
+              </div>
+              <div class="token-row">
+                <div class="color-dot" style="background: #2F7BFF;"></div>
+                <span class="token-name">--blue-500</span>
+                <span class="token-value">#2F7BFF</span>
+              </div>
+              <div class="token-row">
+                <div class="color-dot" style="background: #FF7A5C;"></div>
+                <span class="token-name">--spark-500</span>
+                <span class="token-value">#FF7A5C</span>
+              </div>
+              <div class="token-row">
+                <div class="color-dot" style="background: #7C3AED;"></div>
+                <span class="token-name">--violet-500</span>
+                <span class="token-value">#7C3AED</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Preview -->
+    <section class="card" style="margin-top:16px;">
+      <div class="hd">
+        <div>
+          <h2>Live UI Preview</h2>
+          <span>Try switching themes above</span>
+        </div>
+        <span><code>Preview</code></span>
+      </div>
+
+      <div class="preview">
+        <aside class="sidebar">
+          <div class="brand">
+            <div class="logo" aria-hidden="true"></div>
+            <div>
+              <b>VR STORE</b>
+              <small>Futuristic • Fun • Pro</small>
+            </div>
+          </div>
+
+          <nav class="nav">
+            <a class="active" href="javascript:void(0)">🏠 Home <span>›</span></a>
+            <a href="javascript:void(0)">⬇️ Download <span>›</span></a>
+            <a href="javascript:void(0)">🎮 Apps & Games <span>›</span></a>
+            <a href="javascript:void(0)">⭐ Featured <span>›</span></a>
+            <a href="javascript:void(0)">🧑‍💻 Dev Portal <span>›</span></a>
+            <a href="javascript:void(0)">🛡️ Admin <span>›</span></a>
+          </nav>
+
+          <div class="note" style="border-top:none; padding-top:0; background: transparent; border-radius: var(--r-md);">
+            <b>Notice the difference?</b><br/>
+            Brighter base makes everything feel more breathable and premium.
+          </div>
+        </aside>
+
+        <main class="main">
+          <div class="hero">
+            <div class="row" style="justify-content:space-between; align-items:flex-start; margin-top:0;">
+              <div>
+                <h3>Featured This Week ✨</h3>
+                <p>
+                  The unified brighter base creates a more inviting atmosphere while keeping the futuristic VR identity. Glows pop better, content is clearer.
+                </p>
+              </div>
+              <div class="row" style="margin-top:0;">
+                <span class="pill new">NEW</span>
+                <span class="pill hot">SALE</span>
+              </div>
+            </div>
+
+            <div class="row">
+              <button class="btn primary">✨ Explore</button>
+              <button class="btn accent">⬇️ Download</button>
+              <button class="btn ghost">♡ Wishlist</button>
+            </div>
+          </div>
+
+          <div class="stats">
+            <div class="stat">
+              <div class="k">Downloads</div>
+              <div class="v">128.4K</div>
+            </div>
+            <div class="stat">
+              <div class="k">Top Rating</div>
+              <div class="v">4.7 ★</div>
+            </div>
+            <div class="stat">
+              <div class="k">New Apps</div>
+              <div class="v" style="color: var(--spark-500)">+32</div>
+            </div>
+          </div>
+
+          <div class="list">
+            <div class="item">
+              <div>
+                <b>SmartLine Automotive</b>
+                <small>Training • Digital Twin • VR</small>
+              </div>
+              <span class="badge">Featured</span>
+            </div>
+            <div class="item">
+              <div>
+                <b>Solar Drier Twin</b>
+                <small>Education • Industry 4.0</small>
+              </div>
+              <span class="badge sale">-30%</span>
+            </div>
+            <div class="item">
+              <div>
+                <b>Developer Tools</b>
+                <small>Upload • Payouts • Analytics</small>
+              </div>
+              <span class="badge portal">Portal</span>
+            </div>
+            <div class="item">
+              <div>
+                <b>Admin Reviews</b>
+                <small>Compliance • Quality • Trust</small>
+              </div>
+              <span class="badge review">Review</span>
+            </div>
+          </div>
+
+          <div class="note">
+            <b>What's unified now:</b><br/>
+            • Same <code>#0A0F1D</code> base across all themes<br/>
+            • Same panel hierarchy (800 → 750 → 700)<br/>
+            • Only accents change per context (Store=cyan, Admin=blue, Dev=violet secondary)
+          </div>
+        </main>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    const THEME_BUTTONS = [...document.querySelectorAll('.seg button')];
+    const BODY = document.body;
+
+    const TOKENS = [
+      { name:'VR Cyan', var:'--cyan-400', role:'Store primary / immersive' },
+      { name:'Cyan Light', var:'--cyan-300', role:'Hover states' },
+      { name:'Tech Blue', var:'--blue-500', role:'Admin primary / trust' },
+      { name:'Blue Light', var:'--blue-400', role:'Hover states' },
+      { name:'Spark', var:'--spark-500', role:'CTAs / fun accent (10-15%)' },
+      { name:'Spark Hover', var:'--spark-400', role:'Hover / soft' },
+      { name:'Violet', var:'--violet-500', role:'Dev secondary / creative' },
+      { name:'Mint', var:'--mint-500', role:'Success states' },
+      { name:'Text Primary', var:'--text-100', role:'Headings / emphasis' },
+      { name:'Text Secondary', var:'--text-200', role:'Body text' },
+      { name:'Text Muted', var:'--text-300', role:'Captions / hints' },
+      { name:'Warning', var:'--warning-500', role:'Admin accent / alerts' },
+    ];
+
+    const chipsEl = document.getElementById('chips');
+
+    function cssVarValue(v){
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+    }
+
+    function renderChips(){
+      chipsEl.innerHTML = '';
+      TOKENS.forEach(t=>{
+        const chip = document.createElement('div');
+        chip.className = 'chip';
+
+        const sw = document.createElement('div');
+        sw.className = 'swatch';
+        sw.style.background = cssVarValue(t.var) || 'transparent';
+
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        meta.innerHTML = `<div class="n">${t.name}</div>
+                          <div class="h">${t.var}: ${cssVarValue(t.var)}</div>
+                          <div class="h" style="opacity:.85">${t.role}</div>`;
+        chip.appendChild(sw);
+        chip.appendChild(meta);
+        chipsEl.appendChild(chip);
+      });
+    }
+
+    function setTheme(theme){
+      BODY.setAttribute('data-theme', theme);
+      THEME_BUTTONS.forEach(b=>b.classList.toggle('active', b.dataset.set === theme));
+      renderChips();
+    }
+
+    THEME_BUTTONS.forEach(btn=>{
+      btn.addEventListener('click', ()=> setTheme(btn.dataset.set));
+    });
+
+    renderChips();
+  </script>
+</body>
+</html>

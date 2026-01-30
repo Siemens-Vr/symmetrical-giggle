@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>VRStore Palette System - Store vs Admin vs Dev</title>
+  <style>
+    :root{
+      /* ---------- Shared "Lock" Palette (Brand Core) ---------- */
+      --space-950:#070A12; /* Deep Space Navy */
+      --space-900:#0B1020; /* Space */
+      --slate-850:#0F172A; /* Charcoal Navy */
+      --panel-800:#121B2E; /* Panels */
+      --panel-750:#16213A; /* Elevated panels */
+      --border-700:rgba(255,255,255,.10);
+      --border-650:rgba(255,255,255,.14);
+
+      --text-100:#F6F7FB;  /* Primary text */
+      --text-200:rgba(246,247,251,.82); /* Secondary text */
+      --text-300:rgba(246,247,251,.62); /* Muted text */
+
+      --blue-500:#2F7BFF;  /* Tech Blue */
+      --cyan-400:#26E6D9;  /* VR Cyan */
+      --teal-500:#00B894;  /* Teal */
+      --violet-500:#7C3AED;/* Violet (optional highlight) */
+
+      /* Accent: Muted Coral–Amber hybrid (fun, controlled) */
+      --spark-500:#FF7A5C; /* Spark (Primary accent) */
+      --spark-600:#E9654B; /* Spark pressed */
+      --spark-300:#FFB39F; /* Spark soft */
+
+      /* Status */
+      --success-500:#22C55E;
+      --warning-500:#F59E0B;
+      --danger-500:#EF4444;
+
+      /* Shadows */
+      --shadow-lg: 0 18px 60px rgba(0,0,0,.55);
+      --shadow-md: 0 10px 32px rgba(0,0,0,.45);
+      --shadow-sm: 0 6px 16px rgba(0,0,0,.35);
+
+      /* Radius + spacing */
+      --r-lg:18px;
+      --r-md:14px;
+      --r-sm:10px;
+
+      /* Glow system (tuned per theme below) */
+      --glow-primary: 0 0 0 rgba(0,0,0,0);
+      --glow-accent:  0 0 0 rgba(0,0,0,0);
+      --glow-cyan:    0 0 0 rgba(0,0,0,0);
+    }
+
+    /* ---------- Theme Variations (Store / Admin / Dev) ---------- */
+    [data-theme="store"]{
+      --bg: var(--space-950);
+      --surface: var(--panel-800);
+      --surface-2: var(--panel-750);
+      --text: var(--text-100);
+      --muted: var(--text-200);
+      --muter: var(--text-300);
+
+      --primary: var(--cyan-400); /* store feels immersive */
+      --secondary: var(--blue-500);
+      --accent: var(--spark-500);
+
+      --glow-primary: 0 0 22px rgba(38,230,217,.22), 0 0 60px rgba(38,230,217,.10);
+      --glow-accent:  0 0 18px rgba(255,122,92,.20), 0 0 55px rgba(255,122,92,.10);
+      --glow-cyan:    0 0 26px rgba(38,230,217,.30), 0 0 70px rgba(38,230,217,.12);
+    }
+
+    [data-theme="admin"]{
+      --bg: #0A0F1D;
+      --surface: #0F172A;
+      --surface-2: #121D33;
+      --text: var(--text-100);
+      --muted: rgba(246,247,251,.78);
+      --muter: rgba(246,247,251,.58);
+
+      --primary: var(--blue-500); /* admin = trust & clarity */
+      --secondary: #8B5CF6;       /* gentle violet for differentiation */
+      --accent: #F59E0B;          /* amber for warnings/attention */
+
+      --glow-primary: 0 0 14px rgba(47,123,255,.18);
+      --glow-accent:  0 0 12px rgba(245,158,11,.18);
+      --glow-cyan:    0 0 0 rgba(0,0,0,0); /* minimal */
+    }
+
+    [data-theme="dev"]{
+      --bg: #070A12;
+      --surface: #0C1428;
+      --surface-2: #101B34;
+      --text: var(--text-100);
+      --muted: rgba(246,247,251,.80);
+      --muter: rgba(246,247,251,.60);
+
+      --primary: #7C3AED;         /* dev portal = creative energy */
+      --secondary: var(--cyan-400);
+      --accent: var(--spark-500); /* still brand spark */
+
+      --glow-primary: 0 0 18px rgba(124,58,237,.22), 0 0 55px rgba(124,58,237,.10);
+      --glow-accent:  0 0 16px rgba(255,122,92,.18), 0 0 50px rgba(255,122,92,.08);
+      --glow-cyan:    0 0 18px rgba(38,230,217,.18);
+    }
+
+    /* ---------- Base layout ---------- */
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Helvetica Neue";
+      background: radial-gradient(900px 700px at 20% 15%, rgba(38,230,217,.08), transparent 60%),
+                  radial-gradient(900px 700px at 80% 20%, rgba(255,122,92,.07), transparent 60%),
+                  var(--bg);
+      color: var(--text);
+    }
+
+    .wrap{ max-width:1180px; margin:0 auto; padding:28px 18px 70px; }
+    header{
+      display:flex; gap:16px; align-items:center; justify-content:space-between;
+      margin-bottom:18px;
+    }
+    .title h1{ margin:0; font-size:20px; letter-spacing:.2px; }
+    .title p{ margin:6px 0 0; color: var(--muted); font-size:13px; line-height:1.35; }
+
+    .controls{
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+    }
+    .seg{
+      display:flex;
+      background: rgba(255,255,255,.06);
+      border: 1px solid var(--border-700);
+      border-radius: 999px;
+      padding: 4px;
+      box-shadow: var(--shadow-sm);
+    }
+    .seg button{
+      border:0;
+      background: transparent;
+      color: var(--muted);
+      padding:8px 12px;
+      border-radius:999px;
+      cursor:pointer;
+      font-weight:650;
+      font-size:12px;
+      letter-spacing:.2px;
+    }
+    .seg button.active{
+      background: rgba(255,255,255,.10);
+      color: var(--text);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.10), var(--glow-primary);
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:14px;
+    }
+    @media (max-width: 960px){ .grid{ grid-template-columns: 1fr; } }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border: 1px solid var(--border-700);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow-md);
+      overflow:hidden;
+    }
+    .card .hd{
+      padding:16px 16px 10px;
+      border-bottom: 1px solid var(--border-700);
+      display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+    }
+    .card .hd h2{ margin:0; font-size:14px; }
+    .card .hd span{ color:var(--muter); font-size:12px; }
+    .card .bd{ padding:16px; }
+
+    /* ---------- Palette chips ---------- */
+    .chips{ display:grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap:10px; }
+    @media (max-width: 680px){ .chips{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+    .chip{
+      border-radius: 14px;
+      border: 1px solid var(--border-700);
+      overflow:hidden;
+      background: rgba(255,255,255,.04);
+    }
+    .swatch{ height:48px; }
+    .meta{ padding:10px 10px 11px; }
+    .meta .n{ font-size:12px; font-weight:750; }
+    .meta .h{ font-size:11px; color:var(--muter); margin-top:4px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+    /* ---------- UI preview ---------- */
+    .preview{
+      display:grid;
+      grid-template-columns: 280px 1fr;
+      min-height: 420px;
+    }
+    @media (max-width: 960px){ .preview{ grid-template-columns: 1fr; } }
+
+    .sidebar{
+      background: rgba(0,0,0,.25);
+      border-right: 1px solid var(--border-700);
+      padding:16px;
+      display:flex; flex-direction:column; gap:14px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      padding:10px 12px;
+      border-radius: 14px;
+      border:1px solid var(--border-700);
+      background: rgba(255,255,255,.04);
+    }
+    .logo{
+      width:38px; height:38px; border-radius: 12px;
+      background: radial-gradient(circle at 30% 30%, rgba(38,230,217,.75), rgba(47,123,255,.35) 55%, rgba(124,58,237,.25));
+      box-shadow: var(--glow-cyan);
+    }
+    .brand b{ font-size:13px; letter-spacing:.4px; }
+    .brand small{ display:block; margin-top:3px; color:var(--muter); font-size:11px; }
+
+    .nav a{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:10px 12px;
+      text-decoration:none;
+      color: var(--muted);
+      border-radius: 12px;
+      border: 1px solid transparent;
+    }
+    .nav a:hover{
+      border-color: var(--border-700);
+      background: rgba(255,255,255,.04);
+    }
+    .nav a.active{
+      color: var(--text);
+      border-color: var(--border-650);
+      background: rgba(255,255,255,.06);
+      box-shadow: var(--glow-primary);
+    }
+
+    .main{
+      padding:18px;
+      display:flex; flex-direction:column; gap:14px;
+    }
+    .hero{
+      border-radius: var(--r-lg);
+      padding:16px;
+      border: 1px solid var(--border-700);
+      background:
+        radial-gradient(500px 240px at 18% 20%, rgba(38,230,217,.14), transparent 60%),
+        radial-gradient(420px 220px at 85% 28%, rgba(255,122,92,.12), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      box-shadow: var(--shadow-md);
+      position:relative;
+      overflow:hidden;
+    }
+    .hero h3{ margin:0; font-size:16px; }
+    .hero p{ margin:8px 0 14px; color:var(--muted); font-size:13px; line-height:1.45; max-width: 60ch;}
+    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+
+    .btn{
+      border:0;
+      cursor:pointer;
+      border-radius: 12px;
+      padding:10px 14px;
+      font-weight: 800;
+      font-size: 12px;
+      letter-spacing:.25px;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+      user-select:none;
+    }
+    .btn:active{ transform: translateY(1px); }
+
+    .btn.primary{
+      color:#041016;
+      background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 90%, white 10%), var(--secondary));
+      box-shadow: var(--glow-primary);
+    }
+    .btn.primary:hover{ transform: translateY(-1px); box-shadow: var(--glow-primary), var(--shadow-sm); }
+
+    .btn.accent{
+      color:#160705;
+      background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 60%, black 40%));
+      box-shadow: var(--glow-accent);
+    }
+    .btn.accent:hover{ transform: translateY(-1px); box-shadow: var(--glow-accent), var(--shadow-sm); }
+
+    .btn.ghost{
+      color: var(--text);
+      background: rgba(255,255,255,.06);
+      border: 1px solid var(--border-700);
+    }
+    .btn.ghost:hover{ background: rgba(255,255,255,.08); }
+
+    .pill{
+      padding:6px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing:.2px;
+      border: 1px solid var(--border-700);
+      background: rgba(255,255,255,.04);
+      color: var(--muted);
+    }
+    .pill.hot{ color:#1a0b08; background: color-mix(in srgb, var(--accent) 30%, transparent); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+    .pill.new{ color:#041016; background: color-mix(in srgb, var(--primary) 22%, transparent); border-color: color-mix(in srgb, var(--primary) 35%, transparent); }
+
+    .stats{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap:10px;
+    }
+    @media (max-width: 560px){ .stats{ grid-template-columns: 1fr; } }
+
+    .stat{
+      border-radius: var(--r-md);
+      border:1px solid var(--border-700);
+      background: rgba(255,255,255,.04);
+      padding:12px;
+    }
+    .stat .k{ color:var(--muter); font-size:11px; letter-spacing:.2px; }
+    .stat .v{ margin-top:7px; font-size:18px; font-weight: 900; }
+
+    .list{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap:10px;
+    }
+    @media (max-width: 700px){ .list{ grid-template-columns: 1fr; } }
+
+    .item{
+      border-radius: var(--r-md);
+      border:1px solid var(--border-700);
+      background: rgba(255,255,255,.04);
+      padding:12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .item b{ font-size:12px; }
+    .item small{ display:block; margin-top:4px; color:var(--muter); font-size:11px; }
+    .badge{
+      padding:6px 10px;
+      border-radius: 10px;
+      font-weight: 900;
+      font-size: 11px;
+      color:#041016;
+      background: color-mix(in srgb, var(--primary) 75%, white 25%);
+      box-shadow: var(--glow-primary);
+      white-space:nowrap;
+    }
+    .badge.sale{
+      color:#160705;
+      background: color-mix(in srgb, var(--accent) 75%, white 25%);
+      box-shadow: var(--glow-accent);
+    }
+
+    /* Small footer note */
+    .note{
+      margin-top:14px;
+      color: var(--muter);
+      font-size: 12px;
+      line-height:1.45;
+      border-top:1px solid var(--border-700);
+      padding-top:12px;
+    }
+    code{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; color: var(--text); }
+  </style>
+</head>
+
+<body data-theme="store">
+  <div class="wrap">
+    <header>
+      <div class="title">
+        <h1>VRStore Color System (Locked Palette + Variations + VR Glow)</h1>
+        <p>
+          Switch themes to visualize <b>Store</b> (immersive + fun), <b>Admin</b> (clarity + control), and <b>Dev Portal</b> (creative + tools).
+          The "Spark" accent stays consistent for brand recognition.
+        </p>
+      </div>
+
+      <div class="controls">
+        <div class="seg" role="tablist" aria-label="Theme selector">
+          <button class="active" data-set="store">Store</button>
+          <button data-set="admin">Admin</button>
+          <button data-set="dev">Dev Portal</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- Palette -->
+      <section class="card">
+        <div class="hd">
+          <div>
+            <h2>Locked Palette (Names + Roles)</h2>
+            <span>These are the colors you "lock" across the whole product suite.</span>
+          </div>
+          <span><code>Brand Core</code></span>
+        </div>
+        <div class="bd">
+          <div class="chips" id="chips"></div>
+
+          <div class="note">
+            <b>Usage rules (keep it premium):</b><br/>
+            • Backgrounds: <code>space</code> + <code>panel</code> only. <br/>
+            • Text: only <code>text-*</code>. Avoid pure white everywhere. <br/>
+            • Accent (Spark): max <b>5-10%</b> of UI. Only CTAs, badges, key highlights. <br/>
+            • Cyan/Blue/Violet: focus rings, links, subtle highlights, "tech glow" - not big surfaces.
+          </div>
+        </div>
+      </section>
+
+      <!-- Glow & motion -->
+      <section class="card">
+        <div class="hd">
+          <div>
+            <h2>VR Glow / Motion Tuning</h2>
+            <span>Modern "futuristic" feel comes from glow + motion restraint.</span>
+          </div>
+          <span><code>Effects</code></span>
+        </div>
+        <div class="bd">
+          <div class="stat" style="margin-bottom:10px">
+            <div class="k">Glow formula (recommended)</div>
+            <div class="v" style="font-size:13px; font-weight:750; margin-top:8px; line-height:1.5">
+              • Primary buttons: <code>--glow-primary</code><br/>
+              • Accent CTAs / sale badges: <code>--glow-accent</code><br/>
+              • Brand moments (hero, spotlight): <code>--glow-cyan</code><br/>
+              <br/>
+              Keep glow soft: <b>opacity 0.10-0.30</b>, blur radius <b>18-70px</b>.
+            </div>
+          </div>
+
+          <div class="stats">
+            <div class="stat">
+              <div class="k">Store</div>
+              <div class="v" style="font-size:13px">Immersive glow (cyan + spark)</div>
+            </div>
+            <div class="stat">
+              <div class="k">Admin</div>
+              <div class="v" style="font-size:13px">Minimal glow (clarity first)</div>
+            </div>
+            <div class="stat">
+              <div class="k">Dev</div>
+              <div class="v" style="font-size:13px">Creative glow (violet + spark)</div>
+            </div>
+          </div>
+
+          <div class="note">
+            <b>Motion rule:</b> use micro-motion only (120-200ms). No bouncing everywhere.<br/>
+            <b>Hover:</b> translateY(-1px) + small glow increase. <b>Tap:</b> translateY(+1px).<br/>
+            This keeps it "fun" while staying professional.
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Preview -->
+    <section class="card" style="margin-top:14px;">
+      <div class="hd">
+        <div>
+          <h2>UI Preview (Store / Admin / Dev)</h2>
+          <span>Same components, different theme variables.</span>
+        </div>
+        <span><code>Preview</code></span>
+      </div>
+
+      <div class="preview">
+        <aside class="sidebar">
+          <div class="brand">
+            <div class="logo" aria-hidden="true"></div>
+            <div>
+              <b>VR STORE</b>
+              <small>Futuristic • Fun • Professional</small>
+            </div>
+          </div>
+
+          <nav class="nav">
+            <a class="active" href="javascript:void(0)">🏠 Home <span>›</span></a>
+            <a href="javascript:void(0)">⬇️ Download <span>›</span></a>
+            <a href="javascript:void(0)">🎮 Apps & Games <span>›</span></a>
+            <a href="javascript:void(0)">⭐ Featured <span>›</span></a>
+            <a href="javascript:void(0)">🧑‍💻 Developer Portal <span>›</span></a>
+            <a href="javascript:void(0)">🛡️ Admin <span>›</span></a>
+          </nav>
+
+          <div class="note" style="border-top:none; padding-top:0;">
+            <b>Quick note:</b><br/>
+            The same brand can still feel different per area without losing identity.
+          </div>
+        </aside>
+
+        <main class="main">
+          <div class="hero">
+            <div class="row" style="justify-content:space-between; align-items:flex-start">
+              <div>
+                <h3>Featured this week</h3>
+                <p>
+                  Cinematic hero background + subtle cyan glow gives VR immersion.
+                  Accent ("Spark") is used only for one primary action so it feels premium, not noisy.
+                </p>
+              </div>
+              <div class="row">
+                <span class="pill new">NEW</span>
+                <span class="pill hot">SALE</span>
+              </div>
+            </div>
+
+            <div class="row">
+              <button class="btn primary">✨ Explore</button>
+              <button class="btn accent">⬇️ Download</button>
+              <button class="btn ghost">♡ Wishlist</button>
+            </div>
+          </div>
+
+          <div class="stats">
+            <div class="stat">
+              <div class="k">Downloads</div>
+              <div class="v">128.4K</div>
+            </div>
+            <div class="stat">
+              <div class="k">Top Rating</div>
+              <div class="v">4.7 ★</div>
+            </div>
+            <div class="stat">
+              <div class="k">New Apps</div>
+              <div class="v">+32</div>
+            </div>
+          </div>
+
+          <div class="list">
+            <div class="item">
+              <div>
+                <b>SmartLine Automotive</b>
+                <small>Training • Digital Twin • VR</small>
+              </div>
+              <span class="badge">Featured</span>
+            </div>
+            <div class="item">
+              <div>
+                <b>Solar Drier Twin</b>
+                <small>Education • Industry 4.0</small>
+              </div>
+              <span class="badge sale">-30%</span>
+            </div>
+            <div class="item">
+              <div>
+                <b>Developer Tools</b>
+                <small>Upload • Payouts • Analytics</small>
+              </div>
+              <span class="badge">Portal</span>
+            </div>
+            <div class="item">
+              <div>
+                <b>Admin Reviews</b>
+                <small>Compliance • Quality • Trust</small>
+              </div>
+              <span class="badge">Review</span>
+            </div>
+          </div>
+
+          <div class="note">
+            <b>How to read this preview:</b><br/>
+            • Store: immersive cyan + spark accent CTAs<br/>
+            • Admin: calmer, more "controlled" accents (less glow)<br/>
+            • Dev: violet energy + cyan highlights for tools
+          </div>
+        </main>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    const THEME_BUTTONS = [...document.querySelectorAll('.seg button')];
+    const BODY = document.body;
+
+    const TOKENS = [
+      { name:'Space 950', var:'--space-950', role:'Primary app background' },
+      { name:'Space 900', var:'--space-900', role:'Alt background / gradients' },
+      { name:'Charcoal Navy', var:'--slate-850', role:'Text-on-dark anchor surfaces' },
+      { name:'Panel 800', var:'--panel-800', role:'Cards / panels / modals' },
+      { name:'Panel 750', var:'--panel-750', role:'Elevated panels / hovers' },
+      { name:'Tech Blue', var:'--blue-500', role:'Links, focus, trust' },
+      { name:'VR Cyan', var:'--cyan-400', role:'Immersive highlights, glow' },
+      { name:'Teal', var:'--teal-500', role:'Secondary success-ish actions' },
+      { name:'Violet', var:'--violet-500', role:'Dev differentiation (optional)' },
+      { name:'Spark Accent', var:'--spark-500', role:'Primary CTA / fun spark (5-10%)' },
+      { name:'Text 100', var:'--text-100', role:'Primary text' },
+      { name:'Text 200', var:'--text-200', role:'Secondary text' },
+      { name:'Text 300', var:'--text-300', role:'Muted text' }
+    ];
+
+    const chipsEl = document.getElementById('chips');
+
+    function cssVarValue(v){
+      return getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+    }
+
+    function renderChips(){
+      chipsEl.innerHTML = '';
+      TOKENS.forEach(t=>{
+        const chip = document.createElement('div');
+        chip.className = 'chip';
+
+        const sw = document.createElement('div');
+        sw.className = 'swatch';
+        sw.style.background = cssVarValue(t.var) || 'transparent';
+
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        meta.innerHTML = `<div class="n">${t.name}</div>
+                          <div class="h">${t.var}: ${cssVarValue(t.var)}</div>
+                          <div class="h" style="opacity:.85">${t.role}</div>`;
+        chip.appendChild(sw);
+        chip.appendChild(meta);
+        chipsEl.appendChild(chip);
+      });
+    }
+
+    function setTheme(theme){
+      BODY.setAttribute('data-theme', theme);
+      THEME_BUTTONS.forEach(b=>b.classList.toggle('active', b.dataset.set === theme));
+      renderChips();
+    }
+
+    THEME_BUTTONS.forEach(btn=>{
+      btn.addEventListener('click', ()=> setTheme(btn.dataset.set));
+    });
+
+    // Initial render
+    renderChips();
+  </script>
+</body>
+</html>
+"""
+path = "/mnt/data/vrstore_palette_system.html"
+with open(path, "w", encoding="utf-8") as f:
+    f.write(html)
+path

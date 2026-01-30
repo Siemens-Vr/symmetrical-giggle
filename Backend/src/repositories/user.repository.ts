@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class UserRepository {
@@ -51,9 +52,13 @@ export class UserRepository {
             lastName?: string;
             dateOfBirth?: Date;
             country?: string;
+            termsAccepted?: boolean;
+            tosVersion?: string;
         },
+        tx?: Prisma.TransactionClient,
     ) {
-        return this.prisma.user.update({
+        const client = tx || this.prisma;
+        return client.user.update({
             where: { id },
             data: profile,
         });

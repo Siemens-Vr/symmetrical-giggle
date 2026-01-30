@@ -14,6 +14,7 @@ export interface TempTokenPayload {
     email: string;
     type: 'temp';
     emailVerified: boolean;
+    currentStep: string;
 }
 
 @Injectable()
@@ -42,12 +43,13 @@ export class TokenService {
     /**
      * Generate JWT temp token for signup flow (15 min expiry)
      */
-    generateTempToken(userId: string, email: string): string {
+    generateTempToken(userId: string, email: string, currentStep: string): string {
         const payload: TempTokenPayload = {
             sub: userId,
             email,
             type: 'temp',
             emailVerified: true,
+            currentStep,
         };
 
         return this.jwtService.sign(payload, {

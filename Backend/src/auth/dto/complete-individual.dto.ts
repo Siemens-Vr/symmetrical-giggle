@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsDateString, Length } from 'class-validator';
+import { IsNotEmpty, IsString, IsDateString, Length, IsBoolean, Equals } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CompleteIndividualDto {
@@ -36,4 +36,11 @@ export class CompleteIndividualDto {
     @IsNotEmpty({ message: 'Country is required' })
     @Length(2, 2, { message: 'Country must be a 2-letter code' })
     country: string;
+    @ApiProperty({
+        example: true,
+        description: 'Accept Terms of Service',
+    })
+    @IsBoolean()
+    @Equals(true, { message: 'You must accept the terms of service' })
+    termsAccepted: boolean;
 }

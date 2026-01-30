@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { OrgRole } from '@prisma/client';
+import { OrgRole, Prisma } from '@prisma/client';
 
 @Injectable()
 export class OrganizationMemberRepository {
     constructor(private prisma: PrismaService) { }
 
-    async create(orgId: string, userId: string, role: OrgRole = OrgRole.MEMBER) {
-        return this.prisma.organizationMember.create({
+    async create(orgId: string, userId: string, role: OrgRole = OrgRole.MEMBER, tx?: Prisma.TransactionClient) {
+        const client = tx || this.prisma;
+        return client.organizationMember.create({
             data: {
                 orgId,
                 userId,

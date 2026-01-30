@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsEnum, IsOptional, IsUrl, Length, Matches } from 'class-validator';
+import { IsNotEmpty, IsString, IsEnum, IsOptional, IsUrl, Length, Matches, IsBoolean, Equals } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { OrgType } from '@prisma/client';
 
@@ -50,4 +50,11 @@ export class CompleteOrganizationDto {
     @IsOptional()
     @IsUrl({}, { message: 'Please provide a valid URL' })
     websiteUrl?: string;
+    @ApiProperty({
+        example: true,
+        description: 'Accept Terms of Service',
+    })
+    @IsBoolean()
+    @Equals(true, { message: 'You must accept the terms of service' })
+    termsAccepted: boolean;
 }

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { OrgType, OrgStatus } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { suggestAlternativeSlug } from '../common/utils/slug.util';
 
 @Injectable()
@@ -13,8 +14,9 @@ export class OrganizationRepository {
         type: OrgType;
         country?: string;
         websiteUrl?: string;
-    }) {
-        return this.prisma.organization.create({
+    }, tx?: Prisma.TransactionClient) {
+        const client = tx || this.prisma;
+        return client.organization.create({
             data: {
                 ...data,
                 status: OrgStatus.UNVERIFIED,

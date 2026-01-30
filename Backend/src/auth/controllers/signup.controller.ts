@@ -29,6 +29,7 @@ export class SignupController {
 
     @Post('verify-otp')
     @HttpCode(200)
+    @Throttle({ default: { limit: 5, ttl: 600000 } }) // 5 attempts per 10 minutes
     @ApiOperation({ summary: 'Verify OTP code' })
     @ApiResponse({ status: 200, description: 'OTP verified successfully' })
     @ApiResponse({ status: 400, description: 'Invalid or expired OTP' })

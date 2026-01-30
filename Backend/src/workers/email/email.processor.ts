@@ -5,81 +5,112 @@ import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 
 interface SendOtpJob {
-    email: string;
-    code: string;
-    expiresIn: number;
+  email: string;
+  code: string;
+  expiresIn: number;
 }
 
 @Injectable()
 @Processor('email')
 export class EmailProcessor {
-    private readonly logger = new Logger(EmailProcessor.name);
-    private transporter: nodemailer.Transporter;
+  private readonly logger = new Logger(EmailProcessor.name);
+  private transporter: nodemailer.Transporter;
 
-    constructor(private configService: ConfigService) {
-        this.initializeTransporter();
+  constructor(private configService: ConfigService) {
+    this.initializeTransporter();
+  }
+
+  private initializeTransporter() {
+    const emailService = this.configService.get('EMAIL_SERVICE');
+
+    if (emailService === 'smtp') {
+      this.transporter = nodemailer.createTransport({
+        host: this.configService.get('SMTP_HOST'),
+        port: parseInt(this.configService.get('SMTP_PORT')),
+        secure: this.configService.get('SMTP_SECURE') === 'true',
+        auth: {
+          user: this.configService.get('SMTP_USER'),
+          pass: this.configService.get('SMTP_PASSWORD'),
+        },
+      });
+    } else {
+      // For development: log to console
+      this.logger.warn('Email service not configured. Emails will be logged to console.');
     }
+  }
 
-    private initializeTransporter() {
-        const emailService = this.configService.get('EMAIL_SERVICE');
+  @Process('send-otp')
+  async handleSendOtp(job: Job<SendOtpJob>) {
+    const { email, code, expiresIn } = job.data;
 
-        if (emailService === 'smtp') {
-            this.transporter = nodemailer.createTransport({
-                host: this.configService.get('SMTP_HOST'),
-                port: parseInt(this.configService.get('SMTP_PORT')),
-                secure: this.configService.get('SMTP_SECURE') === 'true',
-                auth: {
-                    user: this.configService.get('SMTP_USER'),
-                    pass: this.configService.get('SMTP_PASSWORD'),
-                },
-            });
-        } else {
-            // For development: log to console
-            this.logger.warn('Email service not configured. Emails will be logged to console.');
-        }
+    try {
+      const html = this.generateOtpEmailHtml(email, 'Verify Your Email', 'Thank you for signing up with VRStore! Please use the verification code below to complete your registration:', code, expiresIn);
+
+      if (this.transporter) {
+        await this.transporter.sendMail({
+          from: `"${this.configService.get('EMAIL_FROM_NAME')}" <${this.configService.get('EMAIL_FROM_ADDRESS')}>`,
+          to: email,
+          subject: 'Your VRStore Verification Code',
+          html,
+        });
+
+        this.logger.log(`OTP email sent successfully to ${email}`);
+      } else {
+        // Development mode: log to console
+        this.logger.log(`\n${'='.repeat(60)}`);
+        this.logger.log(`📧 OTP Email (Development Mode)`);
+        this.logger.log(`To: ${email}`);
+        this.logger.log(`Code: ${code}`);
+        this.logger.log(`Expires in: ${expiresIn / 60} minutes`);
+        this.logger.log(`${'='.repeat(60)}\n`);
+      }
+    } catch (error) {
+      this.logger.error(`Failed to send OTP email to ${email}:`, error);
+      throw error;
     }
+  }
 
-    @Process('send-otp')
-    async handleSendOtp(job: Job<SendOtpJob>) {
-        const { email, code, expiresIn } = job.data;
+  @Process('send-reset-otp')
+  async handleSendResetOtp(job: Job<{ email: string; code: string }>) {
+    const { email, code } = job.data;
+    const expiresIn = (parseInt(this.configService.get('OTP_EXPIRY_MINUTES')) || 10) * 60;
 
-        try {
-            const html = this.generateOtpEmailHtml(code, expiresIn);
+    try {
+      const html = this.generateOtpEmailHtml(email, 'Reset Your Password', 'We received a request to reset your password. Please use the verification code below to proceed:', code, expiresIn);
 
-            if (this.transporter) {
-                await this.transporter.sendMail({
-                    from: `"${this.configService.get('EMAIL_FROM_NAME')}" <${this.configService.get('EMAIL_FROM_ADDRESS')}>`,
-                    to: email,
-                    subject: 'Your VRStore Verification Code',
-                    html,
-                });
+      if (this.transporter) {
+        await this.transporter.sendMail({
+          from: `"${this.configService.get('EMAIL_FROM_NAME')}" <${this.configService.get('EMAIL_FROM_ADDRESS')}>`,
+          to: email,
+          subject: 'Password Reset Code - VRStore',
+          html,
+        });
 
-                this.logger.log(`OTP email sent successfully to ${email}`);
-            } else {
-                // Development mode: log to console
-                this.logger.log(`\n${'='.repeat(60)}`);
-                this.logger.log(`📧 OTP Email (Development Mode)`);
-                this.logger.log(`To: ${email}`);
-                this.logger.log(`Code: ${code}`);
-                this.logger.log(`Expires in: ${expiresIn / 60} minutes`);
-                this.logger.log(`${'='.repeat(60)}\n`);
-            }
-        } catch (error) {
-            this.logger.error(`Failed to send OTP email to ${email}:`, error);
-            throw error;
-        }
+        this.logger.log(`Reset OTP email sent successfully to ${email}`);
+      } else {
+        // Development mode: log to console
+        this.logger.log(`\n${'='.repeat(60)}`);
+        this.logger.log(`📧 Reset OTP Email (Development Mode)`);
+        this.logger.log(`To: ${email}`);
+        this.logger.log(`Code: ${code}`);
+        this.logger.log(`${'='.repeat(60)}\n`);
+      }
+    } catch (error) {
+      this.logger.error(`Failed to send reset OTP email to ${email}:`, error);
+      throw error;
     }
+  }
 
-    private generateOtpEmailHtml(code: string, expiresIn: number): string {
-        const expiryMinutes = expiresIn / 60;
+  private generateOtpEmailHtml(email: string, title: string, text: string, code: string, expiresIn: number): string {
+    const expiryMinutes = expiresIn / 60;
 
-        return `
+    return `
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VRStore Verification Code</title>
+  <title>${title}</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 20px;">
@@ -96,9 +127,9 @@ export class EmailProcessor {
           <!-- Content -->
           <tr>
             <td style="padding: 40px 30px;">
-              <h2 style="color: #333333; margin: 0 0 20px 0; font-size: 24px;">Verify Your Email</h2>
+              <h2 style="color: #333333; margin: 0 0 20px 0; font-size: 24px;">${title}</h2>
               <p style="color: #666666; font-size: 16px; line-height: 1.5; margin: 0 0 30px 0;">
-                Thank you for signing up with VRStore! Please use the verification code below to complete your registration:
+                ${text}
               </p>
               
               <!-- OTP Code -->
@@ -137,5 +168,5 @@ export class EmailProcessor {
 </body>
 </html>
     `;
-    }
+  }
 }

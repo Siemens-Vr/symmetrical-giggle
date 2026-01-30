@@ -1,15 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class OrganizationVerificationRepository {
     constructor(private prisma: PrismaService) { }
 
-    async create(orgId: string) {
+    async create(orgId: string, data: Partial<Prisma.OrganizationVerificationUncheckedCreateInput> = {}) {
         return this.prisma.organizationVerification.create({
             data: {
+                ...data,
                 orgId,
-                paymentMethodAdded: false,
+                paymentMethodAdded: data.paymentMethodAdded ?? false,
             },
         });
     }
