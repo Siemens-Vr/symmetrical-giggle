@@ -90,6 +90,9 @@ model User {
   // Organization relations
   orgMemberships OrganizationMember[]
 
+  // Developer relation
+  developerProfile DeveloperProfile?
+
   @@index([createdAt])
 }
 
@@ -275,4 +278,45 @@ model OrganizationVerification {
   org                Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
   @@index([reviewedAt])
+}
+
+// ----------------------------
+// Developer Profile (1:1 with User)
+// Enables "developer capability" without separate account
+// ----------------------------
+model DeveloperProfile {
+  id          String   @id @default(uuid())
+  userId      String   @unique  // Ensures 1:1 and makes "enable" idempotent
+
+  displayName String
+  websiteUrl  String?
+  bio         String?
+
+  isVerified  Boolean  @default(false)  // Verified developer badge (future use)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([isVerified])
+  @@index([createdAt])
+}
+
+// ----------------------------
+// Audit Log (for tracking sensitive actions)
+// ----------------------------
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String
+  action    String   // e.g., "DEVELOPER_ENABLED", "APP_PUBLISHED"
+  metadata  Json?    // Additional context
+  ip        String?
+  userAgent String?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
 }

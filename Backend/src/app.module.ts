@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { EmailModule } from './workers/email/email.module';
 import { CronModule } from './workers/cron/cron.module';
 import { OrganizationModule } from './organization/organization.module';
+import { DeveloperModule } from './developer/developer.module';
 
 @Module({
     imports: [
@@ -45,6 +46,7 @@ import { OrganizationModule } from './organization/organization.module';
         EmailModule,
         CronModule,
         OrganizationModule,
+        DeveloperModule,
     ],
 })
 export class AppModule { }

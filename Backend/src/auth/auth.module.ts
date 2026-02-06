@@ -13,6 +13,7 @@ import { LoginService } from './services/login.service';
 import { TwoFactorController } from './controllers/two-factor.controller';
 import { TwoFactorService } from './services/two-factor.service';
 import { TempAuthGuard } from './guards/temp-auth.guard';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { UserRepository } from '../repositories/user.repository';
 import { OtpRepository } from '../repositories/otp.repository';
 import { SessionRepository } from '../repositories/session.repository';
@@ -46,6 +47,7 @@ import { OrganizationVerificationRepository } from '../repositories/organization
         LoginService,
         TwoFactorService,
         TempAuthGuard,
+        JwtAuthGuard,
         UserRepository,
         OtpRepository,
         SessionRepository,
@@ -53,6 +55,6 @@ import { OrganizationVerificationRepository } from '../repositories/organization
         OrganizationMemberRepository,
         OrganizationVerificationRepository,
     ],
-    exports: [TokenService],
+    exports: [TokenService, JwtAuthGuard],
 })
 export class AuthModule { }
